@@ -5,14 +5,15 @@ import android.content.Context
 import android.net.ConnectivityManager
 import android.net.Network
 import androidx.annotation.RequiresPermission
+import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import javax.inject.Inject
 
 
 
-/*
-class ConnectivityUseCase @Inject constructor(context: Context) {
+class ConnectivityUseCase @Inject constructor(
+     @ApplicationContext context: Context) {
 
     private val connectivityManager =
         context.getSystemService(Context.CONNECTIVITY_SERVICE) as ConnectivityManager
@@ -33,4 +34,4 @@ class ConnectivityUseCase @Inject constructor(context: Context) {
     }
 
 
-}*/
+}

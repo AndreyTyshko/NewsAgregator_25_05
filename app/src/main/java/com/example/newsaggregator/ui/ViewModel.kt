@@ -9,6 +9,8 @@ import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.example.newsaggregator.AppModule.RssFeed
 import com.example.newsaggregator.data.rss.dto.RssDto
+import com.example.newsaggregator.domain.ConnectivityUseCase
+
 //import com.example.newsaggregator.domain.ConnectivityUseCase
 import com.example.newsaggregator.domain.UseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -26,7 +28,7 @@ import javax.inject.Inject
 class ViewModel @Inject constructor(
 
     val useCase: UseCase,
-  //  val connectivityUseCase: ConnectivityUseCase
+    val connectivityUseCase: ConnectivityUseCase
 ) : ViewModel() {
 
 
@@ -37,13 +39,13 @@ class ViewModel @Inject constructor(
     private val _state = MutableStateFlow<State>(State.ColdStart)
     val state = _state.asStateFlow()
 
-   // private val isConnect = connectivityUseCase.isConnected as StateFlow<Boolean>
+    private val isConnect = connectivityUseCase.isConnected as StateFlow<Boolean>
 
 
     init {
         viewModelScope.launch {
             loadRssFeed()
-            //start()
+            start()
         }
 
     }
@@ -60,7 +62,7 @@ class ViewModel @Inject constructor(
         }
     }
 
-   /* fun start() {
+    fun start() {
         viewModelScope.launch {
             _state.value = State.Wait
             isConnect.collect { isOnline ->
@@ -90,6 +92,6 @@ class ViewModel @Inject constructor(
             }
 
     }
-    }*/
+    }
 
 }

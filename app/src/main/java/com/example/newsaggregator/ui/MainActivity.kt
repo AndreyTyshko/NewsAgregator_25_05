@@ -75,6 +75,7 @@ import com.example.newsaggregator.AppModule.RssFeed
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.text.Html
 import android.text.Spanned
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
@@ -86,7 +87,8 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-
+import androidx.compose.ui.graphics.Color
+import androidx.lifecycle.lifecycleScope
 
 
 @AndroidEntryPoint
@@ -101,17 +103,34 @@ class MainActivity : ComponentActivity() {
                 val viewModel: ViewModel = hiltViewModel()
                 val snackbarHostState = remember { SnackbarHostState() }
 
-                Scaffold(modifier = Modifier.fillMaxSize(),
+                //val state by viewModel.state.collectAsState()
 
-                        snackbarHost = {
-                    SnackbarHost(hostState = snackbarHostState){
-                        ErrorSnackbar(
-                            onDismiss = { viewModel.loadRssFeed() },
-                            snackbarHostState = snackbarHostState
+             /*   // Показ Snackbar при ошибке
+                LaunchedEffect(state) {
+                    if (state is State.Error) {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Ошибка загрузки. Проверьте интернет.",
+                            actionLabel = "Повторить"
                         )
+                        if (result == SnackbarResult.ActionPerformed) {
+                            viewModel.loadRssFeed() // или другой метод для повтора
+                        }
                     }
+                }*/
 
-                }
+
+                Scaffold(
+                    modifier = Modifier.fillMaxSize(),
+
+                    snackbarHost = {
+                        SnackbarHost(hostState = snackbarHostState) {
+                           /* ErrorSnackbar(
+                                onDismiss = { viewModel.loadRssFeed() },
+                                snackbarHostState = snackbarHostState
+                            )*/
+                        }
+
+                    }
 
                 ) { innerPadding ->
                     NavHost(
@@ -132,7 +151,20 @@ class MainActivity : ComponentActivity() {
                             WebViewScreen(url = url, navController = navController)
                         }
 
+
+
+
                     }
+                   /* if (state is State.Wait) {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxSize()
+                                .background(Color.Black.copy(alpha = 0.3f)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            CircularProgressIndicator()
+                        }
+                    }*/
 
                 }
             }
@@ -140,7 +172,7 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    /*@Composable
+/*    @Composable
     fun Screen( viewModel: ViewModel,
                 navController: NavController,
                 snackbarHostState: SnackbarHostState) {
@@ -197,7 +229,7 @@ class MainActivity : ComponentActivity() {
             viewModel.loadRssFeed()
         }
 
-        /*Button(
+     /*   Button(
             onClick = {
                 Log.d("happy", "done")
                 scope.launch {
@@ -213,7 +245,7 @@ class MainActivity : ComponentActivity() {
         ) {
             Text(
                 text = text,
-                modifier = modifier,
+                modifier = modifier
             )
 
         }*/
