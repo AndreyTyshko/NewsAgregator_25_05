@@ -1,11 +1,7 @@
 package com.example.newsaggregator.ui
 
-import android.R.attr.text
-import android.annotation.SuppressLint
-import android.graphics.Bitmap
+
 import android.os.Bundle
-import android.util.Log
-import android.webkit.WebResourceRequest
 import android.webkit.WebView
 import android.webkit.WebViewClient
 import androidx.activity.ComponentActivity
@@ -22,12 +18,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.material3.Button
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -36,7 +29,6 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
@@ -89,77 +81,6 @@ class MainActivity : ComponentActivity() {
             NewsAggregatorTheme {
                 val navController = rememberNavController()
                 val viewModel: ViewModel = hiltViewModel()
-                val snackbarHostState = remember { SnackbarHostState() }
-
-                val state by viewModel.state.collectAsState()
-
-                
-
-
-                // Показ Snackbar при ошибке
-                /*LaunchedEffect(state) {
-                    if (state is State.Error) {
-                        val result = snackbarHostState.showSnackbar(
-                            message = "Ошибка загрузки. Проверьте интернет.",
-                            actionLabel = "Повторить"
-                        )
-                        if (result == SnackbarResult.ActionPerformed) {
-                            viewModel.loadRssFeed() // или другой метод для повтора
-                        }
-                    }
-                }
-
-
-                Scaffold(
-                    modifier = Modifier.fillMaxSize(),
-
-                    snackbarHost = {
-                        SnackbarHost(hostState = snackbarHostState) {
-                            ErrorSnackbar(
-                                onDismiss = { viewModel.loadRssFeed() },
-                                snackbarHostState = snackbarHostState
-                            )
-                        }
-
-                    }
-
-                ) { innerPadding ->
-                    NavHost(
-                        navController = navController,
-                        startDestination = "list",
-                        modifier = Modifier.padding(innerPadding)
-                    ) {
-
-                        composable("list") {
-                            Greeting(
-                               // text = "Press me!",
-                                navController = navController,
-                                viewModel = viewModel
-                            )
-                        }
-                        composable("webview/{url}") { backStackEntry ->
-                            val url = backStackEntry.arguments?.getString("url") ?: ""
-                            WebViewScreen(url = url, navController = navController)
-                        }
-
-
-
-
-                    }
-                    if (state is State.Wait) {
-                        Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .background(Color.Black.copy(alpha = 0.3f)),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            CircularProgressIndicator()
-                        }
-                    }
-
-                }*/
-
-
                 MainScreen(navController, viewModel)
             }
         }
@@ -216,7 +137,6 @@ class MainActivity : ComponentActivity() {
                 }
 
                 is State.Error -> {
-                    // Показываем Snackbar один раз при переходе в Error
                     LaunchedEffect(Unit) {
                         val result = snackbarHostState.showSnackbar(
                             message = "Ошибка подключения сети",
@@ -229,8 +149,6 @@ class MainActivity : ComponentActivity() {
 
                         }
                     }
-
-                    // Можно оставить пустой экран или повторно показать лоадер
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
@@ -391,58 +309,8 @@ class MainActivity : ComponentActivity() {
     }
 
 
-    @Composable
-    fun LoadingIndicator() {
-        Box(
-            modifier = Modifier.fillMaxSize(),
-            contentAlignment = Alignment.Center
-        ) {
-            CircularProgressIndicator(
-                color = MaterialTheme.colorScheme.secondary
-            )
-        }
-    }
 
-    @Composable
-    fun ErrorSnackbar(
 
-        onDismiss: () -> Unit,
-        snackbarHostState: SnackbarHostState,
-
-        ) {
-        SnackbarHost(
-            hostState = snackbarHostState,
-            Modifier.fillMaxWidth(),
-            snackbar = { data ->
-
-                Snackbar(
-                    modifier = Modifier
-                        .padding(start = 8.dp, end = 8.dp),
-                    contentColor = MaterialTheme.colorScheme.secondary,
-                    action = {
-                        data?.  let { _ ->
-                            TextButton(onClick = {
-
-                                data.performAction()
-                                onDismiss
-                            }) {
-                                Text(
-                                    text = "ПОВТОРИТЬ",
-                                    color = MaterialTheme.colorScheme.secondary
-                                )
-                            }
-                        }
-                    }
-                ) {
-
-                    Text(
-                        text = "Ошибка подключения сети",
-                        color = MaterialTheme.colorScheme.onTertiary
-                    )
-                }
-            }
-        )
-    }
 
     @Preview(showBackground = true)
     @Composable
