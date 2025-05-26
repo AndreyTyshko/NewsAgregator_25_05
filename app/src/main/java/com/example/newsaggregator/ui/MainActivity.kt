@@ -75,6 +75,7 @@ import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.text.style.TextAlign
 import androidx.navigation.NavHostController
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -172,7 +173,6 @@ class MainActivity : ComponentActivity() {
     ) {
         val state by viewModel.state.collectAsState()
         val snackbarHostState = remember { SnackbarHostState() }
-        val coroutineScope = rememberCoroutineScope()
 
         Scaffold(
             snackbarHost = { SnackbarHost(snackbarHostState) }
@@ -249,7 +249,6 @@ class MainActivity : ComponentActivity() {
         navController: NavController,
         viewModel: ViewModel
     ) {
-        val scope = rememberCoroutineScope()
         val rssFeed by viewModel.rssFeed.collectAsState()
 
         LaunchedEffect(Unit) {
@@ -259,27 +258,34 @@ class MainActivity : ComponentActivity() {
         Scaffold(
             topBar = {
                 TopAppBar(
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+
                     title = {
+                        Box(
+                            modifier = Modifier
+                                .fillMaxWidth(),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Text(
+                                modifier = Modifier.fillMaxWidth(),
+                                text = "Новости",
+                                        textAlign = TextAlign.Start
+                            )
+                        }
 
 
-                        Text(
-                            modifier = Modifier.fillMaxWidth(),
-                            text =  "Новости")
 
                             },
 
                     modifier = Modifier.height(56.dp),
-                    /*navigationIcon = {
-                        IconButton(onClick = { /* handle back/navigation */ }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
-                        }
-                    },*/
-                    colors = TopAppBarDefaults.topAppBarColors(
-                        containerColor = MaterialTheme.colorScheme.primary,
-                        titleContentColor = MaterialTheme.colorScheme.onPrimary
-                    )
+
+
                 )
             }
+
         ) { paddingValues ->
 
             LazyColumn(
@@ -287,10 +293,9 @@ class MainActivity : ComponentActivity() {
                     .fillMaxSize()
                     .padding(paddingValues),
                 contentPadding = PaddingValues(
-                    start = 8.dp,
-                    end = 8.dp,
+
                     top = 8.dp,
-                    bottom = 16.dp
+
                 ),
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             ) {
@@ -355,12 +360,20 @@ class MainActivity : ComponentActivity() {
         Scaffold(
             topBar = {
                 TopAppBar(
+
                     title = { Text("Полная новость") },
                     navigationIcon = {
                         IconButton(onClick = { navController.popBackStack() }) {
-                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back", tint = MaterialTheme.colorScheme.onPrimary)
                         }
-                    }
+                    },
+
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    ),
+                    modifier = Modifier.height(56.dp),
+
                 )
             }
         ) { padding ->

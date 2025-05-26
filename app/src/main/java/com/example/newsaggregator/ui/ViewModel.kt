@@ -65,6 +65,7 @@ class ViewModel @Inject constructor(
 
     fun start() {
         viewModelScope.launch {
+            loadRssFeed()
             _state.value = State.Wait
             isConnect.collect { isOnline ->
                 if(isOnline){
