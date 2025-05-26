@@ -1,20 +1,16 @@
 package com.example.newsaggregator.ui
 
 import android.util.Log
-import androidx.lifecycle.LiveData
-import androidx.lifecycle.MutableLiveData
+
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 
-import androidx.lifecycle.viewmodel.viewModelFactory
-import com.example.newsaggregator.AppModule.RssFeed
+
 import com.example.newsaggregator.data.rss.dto.RssDto
 import com.example.newsaggregator.domain.ConnectivityUseCase
 
-//import com.example.newsaggregator.domain.ConnectivityUseCase
 import com.example.newsaggregator.domain.UseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.Delay
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -28,10 +24,9 @@ import javax.inject.Inject
 @OptIn(FlowPreview::class)
 class ViewModel @Inject constructor(
 
-    val useCase: UseCase,
-    val connectivityUseCase: ConnectivityUseCase
+    private val useCase: UseCase,
+    private val connectivityUseCase: ConnectivityUseCase
 ) : ViewModel() {
-
 
 
     private val _rssFeed = MutableStateFlow<RssDto?>(null)
@@ -45,7 +40,6 @@ class ViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-           // loadRssFeed()
             start()
         }
 
@@ -58,7 +52,7 @@ class ViewModel @Inject constructor(
             try {
                 _rssFeed.value = useCase.getData()
             } catch (e: Exception) {
-                // Обработка ошибок
+                _state.value = State.Error
             }
         }
     }
@@ -68,12 +62,11 @@ class ViewModel @Inject constructor(
             loadRssFeed()
             _state.value = State.Wait
             isConnect.collect { isOnline ->
-                if(isOnline){
-                    //delay(5000)
+                if (isOnline) {
                     _state.value = State.Wait
                     runCatching {
                         _rssFeed.value = useCase.getData()
-                            _state.value = State.Wait
+                        _state.value = State.Wait
 
                     }.fold(
                         onSuccess = { response ->
@@ -87,14 +80,14 @@ class ViewModel @Inject constructor(
                             _state.value = State.Error
                         }
                     )
-                }else{
+                } else {
                     delay(5000)
                     _state.value = State.Error
                 }
 
             }
 
-    }
+        }
     }
 
 }
