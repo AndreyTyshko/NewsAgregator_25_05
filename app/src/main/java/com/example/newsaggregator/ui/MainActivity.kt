@@ -64,6 +64,7 @@ import androidx.navigation.compose.composable
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.text.Html
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -71,6 +72,7 @@ import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.navigation.NavHostController
@@ -245,14 +247,8 @@ class MainActivity : ComponentActivity() {
     @Composable
     fun Greeting(
         navController: NavController,
-       /* text: String,
-        modifier: Modifier = Modifier,*/
         viewModel: ViewModel
-
-        //feed: RssFeed,
     ) {
-
-
         val scope = rememberCoroutineScope()
         val rssFeed by viewModel.rssFeed.collectAsState()
 
@@ -260,69 +256,92 @@ class MainActivity : ComponentActivity() {
             viewModel.loadRssFeed()
         }
 
+        Scaffold(
+            topBar = {
+                TopAppBar(
+                    title = {
 
 
-        LazyColumn(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
-        ) {
-            items(
-                count = rssFeed?.channel?.items?.size ?: 0
-            ) { index ->
-                val item = rssFeed?.channel?.items?.get(index)
-                item?.let {
-                    Card(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                            .clickable {
-                                val encodedUrl = java.net.URLEncoder.encode(it.link, "UTF-8")
-                                navController.navigate("webview/$encodedUrl")
+                        Text(
+                            modifier = Modifier.fillMaxWidth(),
+                            text =  "Новости")
+
                             },
 
+                    modifier = Modifier.height(56.dp),
+                    /*navigationIcon = {
+                        IconButton(onClick = { /* handle back/navigation */ }) {
+                            Icon(Icons.Default.ArrowBack, contentDescription = "Back")
+                        }
+                    },*/
+                    colors = TopAppBarDefaults.topAppBarColors(
+                        containerColor = MaterialTheme.colorScheme.primary,
+                        titleContentColor = MaterialTheme.colorScheme.onPrimary
+                    )
+                )
+            }
+        ) { paddingValues ->
 
-                        elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
-                    ) {
-                        Column(
-                            modifier = Modifier.padding(16.dp)
+            LazyColumn(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues),
+                contentPadding = PaddingValues(
+                    start = 8.dp,
+                    end = 8.dp,
+                    top = 8.dp,
+                    bottom = 16.dp
+                ),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            ) {
+                items(count = rssFeed?.channel?.items?.size ?: 0) { index ->
+                    val item = rssFeed?.channel?.items?.get(index)
+                    item?.let {
+                        Card(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 16.dp)
+                                .clickable {
+                                    val encodedUrl = java.net.URLEncoder.encode(it.link, "UTF-8")
+                                    navController.navigate("webview/$encodedUrl")
+                                },
+                            elevation = CardDefaults.cardElevation(defaultElevation = 4.dp),
                         ) {
-                            Text(
-                                text = it.title,
-                                style = MaterialTheme.typography.bodyMedium,
-                                fontWeight = FontWeight.Bold
-                            )
-
-                            Spacer(modifier = Modifier.height(8.dp))
-                            val a = it.contents[1].url
-                            a.let { imageUrl ->
-                                AsyncImage(
-                                    model = ImageRequest.Builder(LocalContext.current)
-                                        .data(imageUrl)
-                                        .crossfade(true)
-                                        .build(),
-                                    contentDescription = "Article image",
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .height(200.dp)
-                                        .clip(RoundedCornerShape(8.dp)),
-                                    contentScale = ContentScale.Crop,
-                                    /* placeholder = painterResource(id = R.drawable.ic_placeholder), // опционально
-                                     error = painterResource(id = R.drawable.ic_error) // опционально*/
+                            Column(
+                                modifier = Modifier.padding(16.dp)
+                            ) {
+                                Text(
+                                    text = it.title,
+                                    style = MaterialTheme.typography.bodyMedium,
+                                    fontWeight = FontWeight.Bold
                                 )
+
                                 Spacer(modifier = Modifier.height(8.dp))
-                            }
+                                val imageUrl = it.contents.getOrNull(1)?.url
+                                imageUrl?.let { url ->
+                                    AsyncImage(
+                                        model = ImageRequest.Builder(LocalContext.current)
+                                            .data(url)
+                                            .crossfade(true)
+                                            .build(),
+                                        contentDescription = "Article image",
+                                        modifier = Modifier
+                                            .fillMaxWidth()
+                                            .height(200.dp)
+                                            .clip(RoundedCornerShape(8.dp)),
+                                        contentScale = ContentScale.Crop
+                                    )
+                                    Spacer(modifier = Modifier.height(8.dp))
+                                }
 
-                            Text(
-                                maxLines = 5,
-                                overflow = TextOverflow.Ellipsis,
-
-                                text = Html.fromHtml(it.description, Html.FROM_HTML_MODE_LEGACY)
-                                    .toString().trim(),
-                                style = MaterialTheme.typography.bodyMedium,
-
+                                Text(
+                                    maxLines = 5,
+                                    overflow = TextOverflow.Ellipsis,
+                                    text = Html.fromHtml(it.description, Html.FROM_HTML_MODE_LEGACY)
+                                        .toString().trim(),
+                                    style = MaterialTheme.typography.bodyMedium,
                                 )
-
-
+                            }
                         }
                     }
                 }
