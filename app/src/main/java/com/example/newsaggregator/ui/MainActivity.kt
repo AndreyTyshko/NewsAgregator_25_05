@@ -35,49 +35,35 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
-import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 
 import com.example.newsaggregator.ui.theme.NewsAggregatorTheme
-import com.jakewharton.retrofit2.converter.kotlinx.serialization.asConverterFactory
 import dagger.hilt.android.AndroidEntryPoint
-import kotlinx.coroutines.launch
-import nl.adaptivity.xmlutil.serialization.XML
-import okhttp3.MediaType
-import retrofit2.Retrofit
-import androidx.lifecycle.viewmodel.compose.viewModel
+
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
-import androidx.navigation.NavHost
 import androidx.navigation.compose.rememberNavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.newsaggregator.data.rss.dto.ItemDto
 
 import androidx.navigation.NavController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import androidx.navigation.compose.rememberNavController
-import com.example.newsaggregator.AppModule.RssFeed
 import androidx.hilt.navigation.compose.hiltViewModel
 import android.text.Html
-import android.text.Spanned
-import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Snackbar
 import androidx.compose.material3.SnackbarDuration
@@ -87,10 +73,9 @@ import androidx.compose.material3.SnackbarResult
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.graphics.Color
-import androidx.lifecycle.lifecycleScope
+import androidx.navigation.NavHostController
 
-
+@OptIn(ExperimentalMaterial3Api::class)
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
 
@@ -103,10 +88,13 @@ class MainActivity : ComponentActivity() {
                 val viewModel: ViewModel = hiltViewModel()
                 val snackbarHostState = remember { SnackbarHostState() }
 
-                //val state by viewModel.state.collectAsState()
+                val state by viewModel.state.collectAsState()
 
-             /*   // Показ Snackbar при ошибке
-                LaunchedEffect(state) {
+                
+
+
+                // Показ Snackbar при ошибке
+                /*LaunchedEffect(state) {
                     if (state is State.Error) {
                         val result = snackbarHostState.showSnackbar(
                             message = "Ошибка загрузки. Проверьте интернет.",
@@ -116,7 +104,7 @@ class MainActivity : ComponentActivity() {
                             viewModel.loadRssFeed() // или другой метод для повтора
                         }
                     }
-                }*/
+                }
 
 
                 Scaffold(
@@ -124,10 +112,10 @@ class MainActivity : ComponentActivity() {
 
                     snackbarHost = {
                         SnackbarHost(hostState = snackbarHostState) {
-                           /* ErrorSnackbar(
+                            ErrorSnackbar(
                                 onDismiss = { viewModel.loadRssFeed() },
                                 snackbarHostState = snackbarHostState
-                            )*/
+                            )
                         }
 
                     }
@@ -155,7 +143,7 @@ class MainActivity : ComponentActivity() {
 
 
                     }
-                   /* if (state is State.Wait) {
+                    if (state is State.Wait) {
                         Box(
                             modifier = Modifier
                                 .fillMaxSize()
@@ -164,52 +152,95 @@ class MainActivity : ComponentActivity() {
                         ) {
                             CircularProgressIndicator()
                         }
-                    }*/
+                    }
 
-                }
+                }*/
+
+
+                MainScreen(navController, viewModel)
             }
         }
     }
 
 
-/*    @Composable
-    fun Screen( viewModel: ViewModel,
-                navController: NavController,
-                snackbarHostState: SnackbarHostState) {
+    @Composable
+    fun MainScreen(
+        navController: NavHostController,
+        viewModel: ViewModel
+    ) {
         val state by viewModel.state.collectAsState()
-        when(state){
-            is State.Completed -> Greeting(navController,   viewModel )
-                is State.Wait -> LoadingIndicator()
-            is State.Error -> {
+        val snackbarHostState = remember { SnackbarHostState() }
+        val coroutineScope = rememberCoroutineScope()
 
-                lifecycleScope.launchWhenStarted {
-                    val result = snackbarHostState.showSnackbar(
-                        message = "Ошибка подключения сети",
-                        actionLabel = "ПОВТОРИТЬ",
+        Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) }
+        ) { innerPadding ->
 
-
-                        duration = SnackbarDuration.Indefinite
-                    )
-                    when (result) {
-                        SnackbarResult.ActionPerformed -> {
-                            viewModel.start()
+            when (state) {
+                is State.Completed -> {
+                    NavHost(
+                        navController = navController,
+                        startDestination = "list",
+                        modifier = Modifier.padding(innerPadding)
+                    ) {
+                        composable("list") {
+                            Greeting(
+                                navController = navController,
+                                viewModel = viewModel
+                            )
                         }
-
-                        SnackbarResult.Dismissed -> {
-                            //viewModel.start()
+                        composable("webview/{url}") { backStackEntry ->
+                            val url = backStackEntry.arguments?.getString("url") ?: ""
+                            WebViewScreen(
+                                url = url,
+                                navController = navController,
+                                viewModel = viewModel
+                            )
                         }
+                    }
                 }
 
+                is State.ColdStart,
+                is State.Wait -> {
+                    // Общий загрузочный индикатор
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        CircularProgressIndicator()
+                    }
+                }
 
+                is State.Error -> {
+                    // Показываем Snackbar один раз при переходе в Error
+                    LaunchedEffect(Unit) {
+                        val result = snackbarHostState.showSnackbar(
+                            message = "Ошибка подключения сети",
+                            actionLabel = "ПОВТОРИТЬ",
+                            duration = SnackbarDuration.Indefinite
+                        )
+                        when (result) {
+                            SnackbarResult.ActionPerformed -> viewModel.start()
+                            SnackbarResult.Dismissed -> Unit
+
+                        }
+                    }
+
+                    // Можно оставить пустой экран или повторно показать лоадер
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(innerPadding),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Text("Ошибка. Попробуйте снова.")
+                    }
                 }
             }
-
-            State.ColdStart -> LoadingIndicator()
         }
-
-
-    }*/
-
+    }
 
     @Composable
     fun Greeting(
@@ -228,28 +259,6 @@ class MainActivity : ComponentActivity() {
         LaunchedEffect(Unit) {
             viewModel.loadRssFeed()
         }
-
-     /*   Button(
-            onClick = {
-                Log.d("happy", "done")
-                scope.launch {
-                    val r = rssFeed
-                    r?.channel?.items?.forEach {
-                        Log.d("link", it.link)
-                        Log.d("guid", it.guid)
-                        Log.d("dcDate", it.dcDate)
-                        Log.d("pubDate", it.pubDate)
-                    }
-                }
-            }
-        ) {
-            Text(
-                text = text,
-                modifier = modifier
-            )
-
-        }*/
-
 
 
 
@@ -323,7 +332,7 @@ class MainActivity : ComponentActivity() {
 
     @OptIn(ExperimentalMaterial3Api::class)
     @Composable
-    fun WebViewScreen(url: String, navController: NavController) {
+    fun WebViewScreen(url: String, navController: NavController, viewModel: ViewModel) {
         Scaffold(
             topBar = {
                 TopAppBar(

@@ -14,6 +14,7 @@ import com.example.newsaggregator.domain.ConnectivityUseCase
 //import com.example.newsaggregator.domain.ConnectivityUseCase
 import com.example.newsaggregator.domain.UseCase
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.Delay
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -44,7 +45,7 @@ class ViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
-            loadRssFeed()
+           // loadRssFeed()
             start()
         }
 
@@ -67,7 +68,7 @@ class ViewModel @Inject constructor(
             _state.value = State.Wait
             isConnect.collect { isOnline ->
                 if(isOnline){
-                    delay(500)
+                    //delay(5000)
                     _state.value = State.Wait
                     runCatching {
                         _rssFeed.value = useCase.getData()
@@ -86,6 +87,7 @@ class ViewModel @Inject constructor(
                         }
                     )
                 }else{
+                    delay(5000)
                     _state.value = State.Error
                 }
 
